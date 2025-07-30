@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+
+{% block title %}ファイル一覧 - 宅建過去問システム{% endblock %}
+
+{% block content %}
+<div class="text-center mb-5">
+    <h2 class="fw-bold text-primary">
+        <i class="fas fa-file-pdf me-3"></i>アップロード済みファイル一覧
+    </h2>
+    <p class="text-muted">PDFファイルと抽出された問題数を確認できます</p>
+</div>
+
+{% if files %}
+<div class="row">
+    {% for file in files %}
+    <div class="col-lg-6 mb-4">
+        <div class="card card-custom h-100">
+            <div class="card-body">
+                <div class="d-flex align-items-start">
+                    <div class="flex-shrink-0">
+                        <i class="fas fa-file-pdf fa-2x text-danger"></i>
+                    </div>
+                    <div class="flex-grow-1 ms-3">
+                        <h5 class="card-title text-truncate" title="{{ file[2] }}">
+                            {{ file[2] }}
+                        </h5>
+                        <p class="card-text text-muted small mb-2">
+                            <i class="fas fa-calendar me-1"></i>
+                            アップロード日: {{ file[3][:19] }}
+                        </p>
+                        <div class="row text-center">
+                            <div class="col-6">
+                                <div class="border rounded p-2">
+                                    <div class="fw-bold text-primary fs-4">{{ file[5] }}</div>
+                                    <small class="text-muted">抽出問題数</small>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="border rounded p-2">
+                                    <div class="fw-bold text-success fs-6">PDF</div>
+                                    <small class="text-muted">ファイル形式</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<div class="text-center">
+    <div class="card card-custom">
+        <div class="card-body p-5">
+            <i class="fas fa-inbox fa-4x text-muted mb-4"></i>
+            <h4 class="text-muted">アップロード済みファイルがありません</h4>
+            <p class="text-muted mb-4">PDFファイルをアップロードして問題を追加しましょう</p>
+            <a href="{{ url_for('upload_file') }}" class="btn btn-custom btn-lg">
+                <i class="fas fa-plus me-2"></i>最初のファイルをアップロード
+            </a>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<div class="text-center mt-4">
+    <div class="btn-group" role="group">
+        <a href="{{ url_for('index') }}" class="btn btn-outline-secondary">
+            <i class="fas fa-home me-2"></i>ホームに戻る
+        </a>
+        <a href="{{ url_for('upload_file') }}" class="btn btn-custom">
+            <i class="fas fa-plus me-2"></i>新しいファイルをアップロード
+        </a>
+    </div>
+</div>
+{% endblock %}

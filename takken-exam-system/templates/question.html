@@ -1,0 +1,208 @@
+{% extends "base.html" %}
+
+{% block title %}問題 - 宅建過去問システム{% endblock %}
+
+{% block content %}
+<div class="text-center mb-4">
+    <h2 class="fw-bold text-primary">
+        <i class="fas fa-question-circle me-3"></i>{{ question.genre }}
+    </h2>
+    <div class="badge bg-primary fs-5 mb-2">問{{ question.question_number }}</div>
+    <p class="text-muted">問題番号: {{ question.question_number }} | 問題ID: {{ question.id }}</p>
+</div>
+
+<div class="row justify-content-center">
+    <div class="col-lg-10">
+        <div class="card card-custom">
+            <div class="card-body p-5">
+                <div class="question-content">
+                    <div class="d-flex align-items-center mb-3">
+                        <span class="badge bg-success fs-5 me-3">問{{ question.question_number }}</span>
+                        {% if question.year %}
+                        <span class="badge bg-info fs-6 me-3">{{ question.year }}</span>
+                        {% endif %}
+                        <h2 class="mb-0">問題文:</h2>
+                    </div>
+                    <div class="border rounded p-4 bg-light mb-4" style="min-height: 120px;">
+                        <p class="mb-0 fs-6 lh-lg" style="white-space: pre-wrap;">{{ question.question_text }}</p>
+                    </div>
+                    
+                    {% if question.options and question.options|length > 0 %}
+                    <h5 class="mb-3">選択肢:</h5>
+                    <div class="options-container">
+                        {% for option in question.options %}
+                        <div class="option-item mb-3 p-4 border rounded bg-white clickable-option" 
+                             style="min-height: 80px; cursor: pointer; transition: all 0.3s ease;" 
+                             data-option-number="{{ loop.index }}" 
+                             onclick="selectOption({{ loop.index }})">
+                            <div class="d-flex align-items-start">
+                                <span class="badge bg-primary me-3 mt-1 fs-6 option-number">{{ loop.index }}</span>
+                                <div class="flex-grow-1">
+                                    <p class="mb-0 fs-6 lh-lg" style="white-space: pre-wrap; word-wrap: break-word;">{{ option }}</p>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    
+                    <!-- 正解表示エリア -->
+                    <div id="answer-feedback" class="mt-4" style="display: none;">
+                        <div class="alert alert-success text-center" role="alert">
+                            <h5 class="alert-heading"><i class="fas fa-check-circle me-2"></i>正解</h5>
+                            <p class="mb-0 fs-5">正解は <strong id="correct-answer-display"></strong> です</p>
+                        </div>
+                    </div>
+                    {% else %}
+                    <div class="alert alert-warning mt-3">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        この問題には選択肢が抽出されていません。PDF処理を改善する必要があります。
+                    </div>
+                    {% endif %}
+                </div>
+                
+                <div class="text-center mt-5">
+                    <div class="btn-group" role="group">
+                        <a href="{{ url_for('index') }}" class="btn btn-outline-secondary btn-lg">
+                            <i class="fas fa-home me-2"></i>ホームに戻る
+                        </a>
+                        <button onclick="location.reload()" class="btn btn-custom btn-lg">
+                            <i class="fas fa-redo me-2"></i>同じジャンルで次の問題
+                        </button>
+                    </div>
+                    
+                    <div class="mt-3">
+                        <small class="text-muted">
+                            問題ID: {{ question.id }} | 
+                            問題番号: {{ question.question_number }} | 
+                            選択肢数: {{ question.options|length if question.options else 0 }}
+                        </small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card card-custom">
+            <div class="card-body text-center">
+                <h6 class="card-title">他のジャンルも試してみませんか？</h6>
+                <div class="btn-group-sm" role="group">
+                    <a href="{{ url_for('get_question', genre='takken_law') }}" class="btn btn-outline-primary btn-sm me-2">宅建業法</a>
+                    <a href="{{ url_for('get_question', genre='civil_law') }}" class="btn btn-outline-primary btn-sm me-2">民法</a>
+                    <a href="{{ url_for('get_question', genre='legal_restrictions') }}" class="btn btn-outline-primary btn-sm me-2">法令等の制限</a>
+                    <a href="{{ url_for('get_question', genre='others') }}" class="btn btn-outline-primary btn-sm me-2">その他</a>
+                    <a href="{{ url_for('get_question', genre='random') }}" class="btn btn-outline-success btn-sm">ランダム</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.clickable-option:hover {
+    background-color: #f8f9fa !important;
+    border-color: #007bff !important;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,123,255,0.15);
+}
+
+.option-selected {
+    background-color: #e3f2fd !important;
+    border-color: #2196f3 !important;
+    border-width: 2px !important;
+}
+
+.option-correct {
+    background-color: #e8f5e8 !important;
+    border-color: #28a745 !important;
+    border-width: 2px !important;
+}
+
+.option-incorrect {
+    background-color: #ffeaea !important;
+    border-color: #dc3545 !important;
+    border-width: 2px !important;
+}
+
+.option-disabled {
+    pointer-events: none;
+    opacity: 0.7;
+}
+</style>
+
+<script>
+let selectedOption = null;
+let correctAnswer = '{{ question.correct_answer }}';
+let hasAnswered = false;
+
+console.log('Correct answer from server:', correctAnswer);
+
+function selectOption(optionNumber) {
+    if (hasAnswered) {
+        return; // 既に回答済みの場合は何もしない
+    }
+    
+    // 前の選択をクリア
+    document.querySelectorAll('.option-item').forEach(item => {
+        item.classList.remove('option-selected');
+    });
+    
+    // 選択した選択肢をハイライト
+    const selectedElement = document.querySelector(`[data-option-number="${optionNumber}"]`);
+    selectedElement.classList.add('option-selected');
+    
+    selectedOption = optionNumber;
+    
+    // 正解を表示
+    showAnswer(optionNumber);
+}
+
+function showAnswer(selectedOptionNumber) {
+    hasAnswered = true;
+    
+    console.log('Selected option:', selectedOptionNumber);
+    console.log('Correct answer:', correctAnswer);
+    
+    // すべての選択肢を無効化
+    document.querySelectorAll('.option-item').forEach(item => {
+        item.classList.add('option-disabled');
+    });
+    
+    // 正解の選択肢をハイライト
+    const correctElement = document.querySelector(`[data-option-number="${correctAnswer}"]`);
+    if (correctElement) {
+        correctElement.classList.add('option-correct');
+        correctElement.classList.remove('option-selected');
+    }
+    
+    // 選択した選択肢が間違っている場合は赤でハイライト
+    if (selectedOptionNumber.toString() !== correctAnswer) {
+        const selectedElement = document.querySelector(`[data-option-number="${selectedOptionNumber}"]`);
+        if (selectedElement) {
+            selectedElement.classList.add('option-incorrect');
+            selectedElement.classList.remove('option-selected');
+        }
+    }
+    
+    // 正解表示エリアを表示
+    const feedbackElement = document.getElementById('answer-feedback');
+    if (feedbackElement) {
+        feedbackElement.style.display = 'block';
+        feedbackElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+    
+    // 正解番号を更新（空の場合はデフォルトメッセージ）
+    const correctAnswerDisplay = document.getElementById('correct-answer-display');
+    if (correctAnswerDisplay) {
+        if (correctAnswer && correctAnswer.trim() !== '') {
+            correctAnswerDisplay.textContent = correctAnswer;
+        } else {
+            correctAnswerDisplay.textContent = '不明';
+        }
+    }
+}
+</script>
+
+{% endblock %}

@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+
+{% block title %}PDFアップロード - 宅建過去問システム{% endblock %}
+
+{% block content %}
+<div class="text-center mb-5">
+    <h2 class="fw-bold text-primary">
+        <i class="fas fa-upload me-3"></i>PDFファイルアップロード
+    </h2>
+    <p class="text-muted">宅建の過去問PDFファイルをアップロードして問題を抽出します</p>
+</div>
+
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card card-custom">
+            <div class="card-body p-5">
+                <form method="POST" enctype="multipart/form-data">
+                    <div class="mb-4">
+                        <label for="file" class="form-label fs-5 fw-semibold">
+                            <i class="fas fa-file-pdf me-2 text-danger"></i>PDFファイルを選択
+                        </label>
+                        <input type="file" class="form-control form-control-lg" id="file" name="file" 
+                               accept=".pdf" required>
+                        <div class="form-text mt-2">
+                            <i class="fas fa-info-circle me-1"></i>
+                            PDFファイルのみアップロード可能です（最大16MB）
+                        </div>
+                    </div>
+                    
+                    <div class="text-center">
+                        <button type="submit" class="btn btn-custom btn-lg px-5">
+                            <i class="fas fa-cloud-upload-alt me-2"></i>アップロード開始
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-5">
+    <div class="col-12">
+        <div class="card card-custom">
+            <div class="card-body">
+                <h5 class="card-title">
+                    <i class="fas fa-lightbulb me-2 text-warning"></i>アップロードのポイント
+                </h5>
+                <div class="row">
+                    <div class="col-md-6">
+                        <ul class="list-unstyled">
+                            <li class="mb-2">
+                                <i class="fas fa-check text-success me-2"></i>
+                                宅建の過去問PDFファイルを使用してください
+                            </li>
+                            <li class="mb-2">
+                                <i class="fas fa-check text-success me-2"></i>
+                                問題番号が明記されているファイルが最適です
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="col-md-6">
+                        <ul class="list-unstyled">
+                            <li class="mb-2">
+                                <i class="fas fa-check text-success me-2"></i>
+                                システムが自動的に問題を抽出・分類します
+                            </li>
+                            <li class="mb-2">
+                                <i class="fas fa-check text-success me-2"></i>
+                                アップロード後すぐに問題を利用できます
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="text-center mt-4">
+    <a href="{{ url_for('index') }}" class="btn btn-outline-secondary">
+        <i class="fas fa-arrow-left me-2"></i>ホームに戻る
+    </a>
+</div>
+{% endblock %}
